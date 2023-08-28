@@ -4,11 +4,21 @@ terraform {
       source  = "hashicorp/azurerm"
       version = "3.71.0"
     }
+    cloudflare = {
+      source  = "cloudflare/cloudflare"
+      version = "4.13.0"
+    }
   }
 }
 
 provider "azurerm" {
   features {}
+}
+
+variable "cloudflare_api_token" {}
+
+provider "cloudflare" {
+  api_token = var.cloudflare_api_token
 }
 
 locals {
@@ -61,6 +71,22 @@ resource "azurerm_public_ip" "ingress" {
 
   tags = merge(local.common_tags, )
   lifecycle { ignore_changes = [tags] }
+}
+
+variable "cloudflare_zone_id" {}
+
+resource "cloudflare_record" "ingress" {
+  zone_id = var.cloudflare_zone_id
+  name    = "ondrejsika"
+  value   = azurerm_public_ip.ingress.ip_address
+  type    = "A"
+}
+
+resource "cloudflare_record" "ingress_wildcard" {
+  zone_id = var.cloudflare_zone_id
+  name    = "*.${cloudflare_record.ingress.name}"
+  value   = cloudflare_record.ingress.hostname
+  type    = "CNAME"
 }
 
 output "kubeconfig" {
