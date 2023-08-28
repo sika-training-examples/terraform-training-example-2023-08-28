@@ -52,7 +52,27 @@ resource "azurerm_kubernetes_cluster" "example" {
   lifecycle { ignore_changes = [tags] }
 }
 
+resource "azurerm_public_ip" "ingress" {
+  name                = "example-ingress"
+  resource_group_name = azurerm_kubernetes_cluster.example.node_resource_group
+  location            = azurerm_resource_group.example.location
+  allocation_method   = "Static"
+  sku                 = "Standard"
+
+  tags = merge(local.common_tags, )
+  lifecycle { ignore_changes = [tags] }
+}
+
 output "kubeconfig" {
   value     = azurerm_kubernetes_cluster.example.kube_config_raw
   sensitive = true
+}
+
+
+output "ingress_resource_group_name" {
+  value = azurerm_public_ip.ingress.resource_group_name
+}
+
+output "ingress_ip" {
+  value = azurerm_public_ip.ingress.ip_address
 }
