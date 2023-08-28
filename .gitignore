@@ -25,3 +25,6 @@ override.tf
 # Infracost
 .infracost
 .infracost-reports
+
+# Kubernetes
+kubeconfig.yml
